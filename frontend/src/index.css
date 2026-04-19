@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ps-blue: #0095ff;
+  --color-ps-blue-glow: rgba(0, 149, 255, 0.4);
+  --color-ps-black: #08080a;
+  --color-ps-surface: #101014;
+  --color-ps-card: rgba(24, 24, 28, 0.8);
+  --color-ps-border: rgba(255, 255, 255, 0.08);
+  
+  --font-inter: "Inter", system-ui, sans-serif;
+  
+  --radius-ps-xl: 1rem;
+  --radius-ps-2xl: 1.5rem;
+  --radius-ps-3xl: 2rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-ps-black);
+  color: #f4f4f5;
+  font-family: var(--font-inter);
+  overflow: hidden;
+  height: 100vh;
+  font-size: 20px; /* Increased from 16px for TV visibility */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ps-blue);
+}
+
+/* Glassmorphism & Cards */
+.glass-panel {
+  background: var(--color-ps-surface);
+  border-right: 1px solid var(--color-ps-border);
+  backdrop-filter: blur(12px);
+}
+
+.glass-card {
+  background: var(--color-ps-card);
+  border: 1px solid var(--color-ps-border);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card:hover, .glass-card:focus {
+  background: rgba(40, 40, 45, 0.95);
+  border-color: var(--color-ps-blue);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 30px var(--color-ps-blue-glow);
+  outline: none;
+}
+
+/* Sidebar Item Focus */
+button:focus {
+  outline: none;
+}
+
+nav button:focus {
+  background: var(--color-ps-blue);
+  color: white;
+  box-shadow: 0 0 20px var(--color-ps-blue-glow);
+}
+
+/* Neon Glows */
+.neon-text {
+  text-shadow: 0 0 10px var(--color-ps-blue-glow);
+}
+
+.neon-border {
+  box-shadow: 0 0 15px var(--color-ps-blue-glow);
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.label-caps {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  color: #a1a1aa; /* Increased contrast from #71717a */
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1000ms linear infinite;
+  -webkit-animation: spin 1000ms linear infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
