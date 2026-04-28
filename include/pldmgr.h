@@ -35,7 +35,7 @@
 #define REPOSITORY_CACHE_PATH "/data/pldmgr/repository_cache.json"
 #define PAYLOADS_STORAGE_DIR "/data/pldmgr/payloads"
 #define REPOSITORY_SOURCE_URL                                                  \
-  "https://itsplk.github.io/ps5_payloads/ps5_payloads.json"
+  "https://itsplk.github.io/ps5-payloads-mirror/payloads.json"
 #define REPOSITORY_REFRESH_INTERVAL_SEC 86400
 
 /* Logging */
