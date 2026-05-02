@@ -284,15 +284,16 @@ function App() {
 
   useEffect(() => {
     let statusTimeout
-    const poll = async () => {
+    async function poll() {
       try {
         const res = await fetch('/autoload_status')
         if (res.ok) {
           const data = await res.json()
           setAutoloadStatus(data)
 
-          // Poll as long as countdown is active OR sequence is executing (not yet DONE)
-          const isActive = data && (data.remaining >= 0 && data.current !== 'DONE')
+          // Poll as long as autoload is active (remaining >= 0), including DONE state
+          // Only stop when remaining goes negative (after /autoload_clear is called)
+          const isActive = data && data.remaining >= 0
           if (isActive) {
             const delay = data.remaining > 0 ? 600 : 500
             statusTimeout = setTimeout(poll, delay)
@@ -318,6 +319,15 @@ function App() {
         </div>
       </div>
     )
+  }
+
+  // Keep overlay active while remaining >= 0, including DONE state.
+  // The overlay is only dismissed when handleFinish() calls /autoload_clear,
+  // which resets remaining to -1 on the backend.
+  const isAutoloadActive = autoloadStatus && autoloadStatus.remaining >= 0;
+
+  if (isAutoloadActive) {
+    return <AutoloadOverlay status={autoloadStatus} onCancel={handleAbort} onFinish={handleFinish} isPS5={isPS5} />;
   }
 
   return (
@@ -360,10 +370,6 @@ function App() {
       >
         {confirmModal.message}
       </Modal>
-
-      {autoloadStatus && autoloadStatus.remaining >= 0 && (
-        <AutoloadOverlay status={autoloadStatus} onCancel={handleAbort} onFinish={handleFinish} isPS5={isPS5} />
-      )}
 
       <aside className={cn(
         "flex-col bg-black/40 border-r border-white/5 transition-all duration-500 z-[100] h-screen",

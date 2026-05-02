@@ -7,20 +7,21 @@ const AutoloadOverlay = ({ status, onCancel, onFinish, isPS5 }) => {
   const isCountdown = status.remaining > 0 || (status.remaining === 0 && !status.current);
   const isExecuting = status.remaining === 0 && !!status.current && status.current !== 'DONE';
   const isDone = status.current === 'DONE';
-  const payloadList = status.list ? status.list.split(',') : [];
+  const payloadList = (typeof status.list === 'string') ? status.list.split(',').filter(p => p.trim() !== '') : [];
   const listRef = useRef(null);
-  const progress = status.total > 0 ? (status.done / status.total) : 0;
+  const displayTotal = status.total > 0 ? status.total : payloadList.length;
+  const progress = displayTotal > 0 ? (status.done / displayTotal) : 0;
 
   const [localMs, setLocalMs] = useState(status.remaining_ms ?? (status.remaining * 1000));
 
   useEffect(() => {
-    setLocalMs(status.remaining_ms ?? (status.remaining * 1000));
+    const serverMs = status.remaining_ms ?? (status.remaining * 1000);
+    // Only sync downward (forward in time): server can pull us closer to 0 if we drift,
+    // but never push us back. This ensures a smooth, non-jumping countdown.
+    setLocalMs(prev => serverMs < prev ? serverMs : prev);
   }, [status.remaining_ms, status.remaining]);
 
-  const isActiveRef = useRef(false);
-  useEffect(() => {
-    isActiveRef.current = (status.remaining_ms ?? (status.remaining * 1000)) < ((status.delay || 5) * 1000);
-  }, [status.remaining_ms, status.remaining, status.delay]);
+  const isActiveRef = useRef(true);
 
   useEffect(() => {
     if (!isCountdown) return;
@@ -48,7 +49,7 @@ const AutoloadOverlay = ({ status, onCancel, onFinish, isPS5 }) => {
   }, [status.done]);
 
   return (
-    <div className="fixed inset-0 bg-black/98 z-[9999] flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto custom-scrollbar">
+    <div className="fixed inset-0 bg-[#08080a] z-[9999] flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto custom-scrollbar">
       <div className={cn(
         "relative w-full max-w-[1400px] flex flex-col items-center",
         isPS5 ? "flex-row items-center justify-center space-x-24 space-y-0" : "md:flex-row md:items-start md:justify-center md:space-x-24 md:space-y-0 space-y-12"
@@ -132,7 +133,7 @@ const AutoloadOverlay = ({ status, onCancel, onFinish, isPS5 }) => {
             {isDone ? (
               <button
                 onClick={onFinish}
-                className="w-full py-8 bg-ps-blue text-white text-3xl font-extrabold rounded-3xl hover:bg-white hover:text-ps-blue transition-all transform active:scale-95"
+                className="w-full py-8 bg-ps-blue text-white text-3xl font-extrabold rounded-3xl hover:bg-[#007acc] transition-all transform active:scale-95 shadow-[0_0_30px_rgba(0,149,255,0.2)]"
               >
                 Return to Dashboard
               </button>
@@ -164,12 +165,12 @@ const AutoloadOverlay = ({ status, onCancel, onFinish, isPS5 }) => {
               isPS5 ? "h-[650px]" : "h-[400px] md:h-[650px]"
             )}
           >
-            <div className="flex items-center justify-between mb-6 px-2 sticky top-0 bg-black/80 py-4 z-10 rounded-2xl border-b border-white/5">
+            <div className="flex items-center justify-between mb-6 px-2 sticky top-0 bg-black/20 py-4 z-10 rounded-2xl border-b border-white/5">
               <h3 className="label-caps !text-white !opacity-100 text-sm tracking-widest flex items-center space-x-3">
                 <span>Payload List</span>
               </h3>
               <span className="bg-white/10 px-4 py-1 rounded-full text-zinc-300 font-black text-xs">
-                {isDone ? status.total : status.done} / {status.total}
+                {isDone ? displayTotal : status.done} / {displayTotal}
               </span>
             </div>
 
@@ -184,7 +185,7 @@ const AutoloadOverlay = ({ status, onCancel, onFinish, isPS5 }) => {
                     className={cn(
                       "flex items-center justify-between p-5 rounded-2xl border transition-all duration-500",
                       active ? 'bg-ps-blue/20 border-ps-blue scale-[1.02] z-10' :
-                        done ? 'bg-emerald-500/5 border-emerald-500/20 opacity-90' : 'bg-white/5 border-white/10 opacity-40'
+                        done ? 'bg-emerald-500/5 border-emerald-500/20 opacity-100' : 'bg-white/5 border-white/10 opacity-40'
                     )}>
                     <div className="flex items-center space-x-5">
                       {done ? <CheckCircle2 className="w-6 h-6 text-emerald-500" /> :
@@ -192,7 +193,7 @@ const AutoloadOverlay = ({ status, onCancel, onFinish, isPS5 }) => {
                           <div className="w-6 h-6 rounded-full border-2 border-white/10" />}
                       <PayloadName
                         path={name}
-                        className={cn("text-xl font-bold", active ? 'text-white' : 'text-zinc-400')}
+                        className={cn("text-xl font-bold", active ? 'text-white' : 'text-zinc-100')}
                         stacked
                       />
                     </div>

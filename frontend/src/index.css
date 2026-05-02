@@ -9,7 +9,8 @@
  */
 .hidden { display: none !important; }
 .flex { display: flex !important; }
-.flex-col { flex-direction: column !important; }
+/* NOTE: flex-col must NOT have !important so md:flex-row can override it */
+.flex-col { flex-direction: column; }
 .items-center { align-items: center !important; }
 .justify-center { justify-content: center !important; }
 .ps5-bg { background-color: var(--color-ps-black) !important; }
@@ -21,6 +22,20 @@
 @media (min-width: 768px) {
   .md\:hidden { display: none !important; }
   .md\:flex { display: flex !important; }
+  .md\:flex-row { flex-direction: row !important; }
+  .md\:flex-col { flex-direction: column !important; }
+  .md\:flex-1 { flex: 1 1 0% !important; }
+  .md\:overflow-hidden { overflow: hidden !important; }
+  .md\:overflow-y-auto { overflow-y: auto !important; }
+  .md\:items-start { align-items: flex-start !important; }
+  .md\:items-center { align-items: center !important; }
+  .md\:justify-center { justify-content: center !important; }
+  .md\:h-screen { height: 100vh !important; }
+  .md\:min-h-0 { min-height: 0 !important; }
+  .md\:sticky { position: sticky !important; }
+  .md\:top-0 { top: 0 !important; }
+  .md\:space-x-24 > * + * { margin-left: 6rem !important; }
+  .md\:space-y-0 > * + * { margin-top: 0 !important; }
 }
 
 :root {
@@ -38,9 +53,7 @@
   --radius-ps-3xl: 2rem;
 }
 
-@theme {
-  /* Removed - using tailwind.config.js */
-}
+/* @theme removed - Tailwind 4 only directive, using tailwind.config.js instead */
 
 :root {
   color-scheme: dark;

@@ -28,6 +28,7 @@ static pthread_t autoload_thread;
 static char autoload_current_name[128] = "";
 static int autoload_total_count = 0;
 static int autoload_done_count = 0;
+static int autoload_triggered = 0; // Starts at 0, becomes 1 when frontend connects
 
 int pldmgr_autoload_get_remaining_seconds() {
     return remaining_seconds;
@@ -41,6 +42,7 @@ long long pldmgr_autoload_get_remaining_ms() {
 }
 
 void pldmgr_autoload_get_status(int *total, int *done, char *current) {
+    autoload_triggered = 1; // Signal that frontend is ready/active
     *total = autoload_total_count;
     *done = autoload_done_count;
     if (current) strcpy(current, autoload_current_name);
@@ -74,10 +76,17 @@ void* pldmgr_autoload_worker(void* arg) {
     remaining_seconds = auto_delay;
 
     if (browser_open) {
-        pldmgr_log("[Autoload] Browser Mode: Waiting 3s for browser to launch...\n");
-        for (int k = 0; k < 30; k++) {
+        pldmgr_log("[Autoload] Browser Mode: Waiting for frontend connection...\n");
+        /* Wait for trigger (frontend connect) or safety timeout (15s) */
+        int wait_timeout = 50; // 50 * 100ms = 5 seconds
+        while (!autoload_triggered && wait_timeout-- > 0) {
             if (abort_flag) return NULL;
             usleep(100000);
+        }
+        if (autoload_triggered) {
+            pldmgr_log("[Autoload] Frontend connected. Starting countdown.\n");
+        } else {
+            pldmgr_log("[Autoload] Frontend timeout. Starting countdown anyway.\n");
         }
     }
 
@@ -210,10 +219,20 @@ void pldmgr_autoload_abort() {
 }
 
 void pldmgr_autoload_reset() {
+    /* If already counting down, don't reset to avoid jumps.
+     * The browser launch often triggers a system 'resume' which would snap time back.
+     * We only reset if the countdown has already finished or hasn't started. */
+    if (countdown_end_time > 0 && remaining_seconds > 0) {
+        pldmgr_log("[PLDMGR] Autoload reset ignored (timer active)\n");
+        return;
+    }
+
+    pldmgr_log("[PLDMGR] Autoload reset triggered\n");
     remaining_seconds = -1;
     is_executing = 0;
     autoload_total_count = 0;
     autoload_done_count = 0;
+    autoload_triggered = 0;
     strcpy(autoload_current_name, "");
 }
 
