@@ -54,20 +54,33 @@ int ps5_launch_elf(const char *path) {
   /* Stream the file */
   char buffer[8192];
   ssize_t read_bytes;
+  int error = 0;
   while ((read_bytes = read(fd, buffer, sizeof(buffer))) > 0) {
-    ssize_t sent = send(sock, buffer, read_bytes, 0);
-    if (sent < 0) {
-      perror("send");
-      break;
+    size_t offset = 0;
+    while (offset < (size_t)read_bytes) {
+      ssize_t sent = send(sock, buffer + offset, (size_t)read_bytes - offset, 0);
+      if (sent <= 0) {
+        pldmgr_log("[PLDMGR] !!! send failed while launching payload\n");
+        error = 1;
+        break;
+      }
+      offset += (size_t)sent;
+      total_sent += (size_t)sent;
     }
-    total_sent += sent;
+    if (error)
+      break;
+  }
+
+  if (read_bytes < 0) {
+    pldmgr_log("[PLDMGR] !!! read failed while launching payload\n");
+    error = 1;
   }
 
   pldmgr_log("[PLDMGR] Sent %zu bytes to loader.\n", total_sent);
 
   close(sock);
   close(fd);
-  return 0;
+  return error ? -1 : 0;
 }
 
 extern int sceSystemServiceLaunchWebBrowser(const char *uri);

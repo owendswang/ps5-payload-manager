@@ -731,6 +731,7 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *conn,
 
   struct MHD_Response *resp = NULL;
   enum MHD_Result ret;
+  int http_status = MHD_HTTP_OK;
 
   if (strcmp(url, ROUTE_USB_MOVE_CHECK) == 0) {
     const char *path = MHD_lookup_connection_value(conn, MHD_GET_ARGUMENT_KIND, "path");
@@ -922,9 +923,11 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *conn,
     }
 
     if (!final_path) {
+      pldmgr_log("[PLDMGR] !!! Payload path rejected: %s\n", path);
       const char *err = "Invalid payload name\n";
       resp = MHD_create_response_from_buffer(strlen(err), (void *)err,
                                              MHD_RESPMEM_PERSISTENT);
+      http_status = MHD_HTTP_BAD_REQUEST;
     } else if (ps5_launch_elf(final_path) == 0) {
       resp = MHD_create_response_from_buffer(strlen(MSG_OK), (void *)MSG_OK,
                                              MHD_RESPMEM_PERSISTENT);
@@ -932,6 +935,7 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *conn,
       const char *err = "Failed to launch payload\n";
       resp = MHD_create_response_from_buffer(strlen(err), (void *)err,
                                              MHD_RESPMEM_PERSISTENT);
+      http_status = MHD_HTTP_INTERNAL_SERVER_ERROR;
     }
     MHD_add_response_header(resp, "Content-Type", "text/plain");
   } else if (strncmp(url, ROUTE_DELETE, strlen(ROUTE_DELETE)) == 0) {
@@ -1134,7 +1138,7 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *conn,
   /* Add CORS headers */
   add_cors_headers(resp);
 
-  ret = MHD_queue_response(conn, MHD_HTTP_OK, resp);
+  ret = MHD_queue_response(conn, http_status, resp);
   MHD_destroy_response(resp);
 
   return ret;
