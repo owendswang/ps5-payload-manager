@@ -34,6 +34,7 @@ import AutoloadOverlay from './components/views/AutoloadOverlay'
 import MoveFromUsbView from './components/views/MoveFromUsbView'
 import LogViewer from './components/views/LogViewer'
 import ManageSourcesView from './components/views/ManageSourcesView'
+import ActiveProcessesView from './components/views/ActiveProcessesView'
 
 function App() {
   const [view, setView] = useState('dashboard')
@@ -442,6 +443,7 @@ function App() {
             <NavButton sidebar sidebarExpanded={sidebarExpanded} active={view === 'dashboard'} onClick={() => setView('dashboard')} icon={LayoutDashboard} label="Dashboard" />
             <NavButton sidebar sidebarExpanded={sidebarExpanded} active={view === 'storage'} onClick={() => setView('storage')} icon={Database} label="Manage Payloads" />
             <NavButton sidebar sidebarExpanded={sidebarExpanded} active={view === 'autoload'} onClick={() => setView('autoload')} icon={RefreshCw} label="Autoload" />
+            <NavButton sidebar sidebarExpanded={sidebarExpanded} active={view === 'processes'} onClick={() => setView('processes')} icon={Cpu} label="Active Processes" />
             <NavButton sidebar sidebarExpanded={sidebarExpanded} active={view === 'settings'} onClick={() => setView('settings')} icon={Settings} label="Settings" />
           </nav>
 
@@ -467,6 +469,7 @@ function App() {
         <NavButton active={view === 'dashboard'} onClick={() => setView('dashboard')} icon={LayoutDashboard} label="Dashboard" mobileLabel="HOME" />
         <NavButton showSeparator active={view === 'storage'} onClick={() => setView('storage')} icon={Database} label="Manage Payloads" mobileLabel="MANAGE" />
         <NavButton showSeparator active={view === 'autoload'} onClick={() => setView('autoload')} icon={RefreshCw} label="Autoload" mobileLabel="AUTO" />
+        <NavButton showSeparator active={view === 'processes'} onClick={() => setView('processes')} icon={Cpu} label="Active Processes" mobileLabel="PROCESSES" />
         <NavButton showSeparator active={view === 'settings'} onClick={() => setView('settings')} icon={Settings} label="Settings" mobileLabel="SETTINGS" />
         <NavButton
           showSeparator
@@ -584,6 +587,14 @@ function App() {
           {view === 'sources' && (
             <ManageSourcesView
               onBack={() => setView('settings')}
+              ip={ip}
+              addToast={addToast}
+              showConfirm={showConfirm}
+            />
+          )}
+
+          {view === 'processes' && (
+            <ActiveProcessesView
               ip={ip}
               addToast={addToast}
               showConfirm={showConfirm}

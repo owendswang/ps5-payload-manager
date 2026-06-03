@@ -971,6 +971,33 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *conn,
     resp = MHD_create_response_from_buffer(len, (void *)resp_buf,
                                            MHD_RESPMEM_MUST_FREE);
     MHD_add_response_header(resp, "Content-Type", "application/json");
+  } else if (strcmp(url, ROUTE_PROCESSES_LIST) == 0) {
+    char *resp_buf;
+    struct MHD_Response *oom_resp = alloc_response_buffer(&resp_buf);
+    if (oom_resp)
+      return MHD_queue_response(conn, MHD_HTTP_INTERNAL_SERVER_ERROR, oom_resp);
+    size_t len = payload_mgr_process_list_json(resp_buf, RESPONSE_BUFFER_SIZE);
+    resp = MHD_create_response_from_buffer(len, (void *)resp_buf,
+                                           MHD_RESPMEM_MUST_FREE);
+    MHD_add_response_header(resp, "Content-Type", "application/json");
+  } else if (strcmp(url, ROUTE_PROCESS_KILL) == 0) {
+    const char *pid_str = MHD_lookup_connection_value(conn, MHD_GET_ARGUMENT_KIND, "pid");
+    if (!pid_str) {
+      const char *err = "{\"ok\":false,\"message\":\"Missing pid\"}";
+      resp = MHD_create_response_from_buffer(strlen(err), (void *)err, MHD_RESPMEM_MUST_COPY);
+      MHD_add_response_header(resp, "Content-Type", "application/json");
+      add_cors_headers(resp);
+      return MHD_queue_response(conn, MHD_HTTP_BAD_REQUEST, resp);
+    }
+    int pid = atoi(pid_str);
+    int rc = payload_mgr_process_kill(pid);
+    char json_resp[256];
+    snprintf(json_resp, sizeof(json_resp), "{\"ok\":%s,\"message\":\"%s\"}",
+             rc == 0 ? "true" : "false", rc == 0 ? "Killed" : "Failed to kill");
+    resp = MHD_create_response_from_buffer(strlen(json_resp), (void *)json_resp, MHD_RESPMEM_MUST_COPY);
+    MHD_add_response_header(resp, "Content-Type", "application/json");
+    add_cors_headers(resp);
+    return MHD_queue_response(conn, rc == 0 ? MHD_HTTP_OK : MHD_HTTP_INTERNAL_SERVER_ERROR, resp);
   } else if (strcmp(url, ROUTE_REPO_LIST) == 0) {
     char *resp_buf;
     struct MHD_Response *oom_resp = alloc_response_buffer(&resp_buf);

@@ -36,4 +36,8 @@ int payload_mgr_sources_remove(int index, char *msg_buf, size_t msg_size);
 size_t payload_mgr_multi_repository_list_json(char *buf, size_t size, int force_refresh);
 int payload_mgr_multi_repository_install(const char *filename, const char *source_id, const char *repo_url, char *msg, size_t msg_size);
 
+/* Processes Management */
+size_t payload_mgr_process_list_json(char *buf, size_t max_size);
+int payload_mgr_process_kill(int pid);
+
 #endif
