@@ -112,7 +112,9 @@ typedef struct {
 } PayloadEntry;
 
 static void scan_payloads_recursive(const char *dir_path, int is_storage,
-                                    PayloadEntry **out, int *count, int max) {
+                                    PayloadEntry **out, int *count, int max, int max_depth) {
+    if (max_depth < 0) return;
+
     DIR *d = opendir(dir_path);
     if (!d) return;
 
@@ -129,7 +131,7 @@ static void scan_payloads_recursive(const char *dir_path, int is_storage,
             continue;
 
         if (S_ISDIR(st.st_mode)) {
-            scan_payloads_recursive(full_path, is_storage, out, count, max);
+            scan_payloads_recursive(full_path, is_storage, out, count, max, max_depth - 1);
             continue;
         }
 
@@ -199,7 +201,7 @@ size_t payload_mgr_list_json(char *json_buf, size_t buf_size) {
 
     /* Scan pldmgr subdirs (this includes PAYLOADS_STORAGE_DIR under /data/pldmgr) */
     for (int i = 0; i < SCAN_DIRS_COUNT; i++) {
-        scan_payloads_recursive(SCAN_DIRS[i], 0, &payloads, &count, max);
+        scan_payloads_recursive(SCAN_DIRS[i], 0, &payloads, &count, max, 3);
     }
 
     /* Optionally scan USB root directories */
@@ -209,7 +211,7 @@ size_t payload_mgr_list_json(char *json_buf, size_t buf_size) {
             snprintf(usb_root, sizeof(usb_root), "/mnt/usb%d", usb);
             struct stat st;
             if (stat(usb_root, &st) == 0 && S_ISDIR(st.st_mode))
-                scan_payloads_recursive(usb_root, 0, &payloads, &count, max);
+                scan_payloads_recursive(usb_root, 0, &payloads, &count, max, 0);
         }
     }
 
