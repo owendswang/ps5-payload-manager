@@ -161,7 +161,7 @@ function App() {
   }
 
   const loadPayload = async (path) => {
-    const name = path.split('/').pop().replace(/\.(elf|bin|lua)$/i, '').replace(/_/g, ' ')
+    const name = path.split('/').pop().replace(/\.(elf|bin)$/i, '').replace(/_/g, ' ')
     setLoading(true)
     setActiveLoadingName(name)
     try {
@@ -197,6 +197,12 @@ function App() {
     const file = input.files?.[0]
     input.value = ''
     if (!file) return
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'elf' && ext !== 'bin') {
+      addToast("Unsupported file type. Only .elf and .bin files are allowed.", "error");
+      return;
+    }
 
     try {
       const res = await fetch(`/manage:check?filename=${encodeURIComponent(file.name)}`)
@@ -521,7 +527,7 @@ function App() {
                       key={p}
                       path={p}
                       onClick={() => loadPayload(p)}
-                      isLoading={loading && activeLoadingName === p.split('/').pop().replace(/\.(elf|bin|lua)$/i, '').replace(/_/g, ' ')}
+                      isLoading={loading && activeLoadingName === p.split('/').pop().replace(/\.(elf|bin)$/i, '').replace(/_/g, ' ')}
                       sourceName={config.MULTI_SOURCES_ENABLED ? (payloadMeta[p.split('/').pop()]?.source_name || null) : null}
                     />
                   ))

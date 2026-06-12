@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 export const isPS5 = /PlayStation/i.test(navigator.userAgent);
+export const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs))
@@ -14,7 +15,7 @@ export const parsePayloadName = (path) => {
     return { displayName: `Delay (${ms / 1000}s)`, version: null, isDelay: true };
   }
 
-  let name = path.split('/').pop().replace(/\.(elf|bin|lua)$/i, '');
+  let name = path.split('/').pop().replace(/\.(elf|bin)$/i, '');
 
   // Try to find version pattern like _v1.0 or -v1.0 or _1.0
   const versionMatch = name.match(/[_-](v?\d+[\d.a-z-]+)/i);

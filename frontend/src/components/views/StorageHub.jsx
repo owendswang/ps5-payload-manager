@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { CloudDownload, Upload, Package, Database, RefreshCw, Trash2, Loader2, AlertTriangle, HardDrive, Usb, ChevronDown, Globe } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { cn, isPS5, parsePayloadName } from '../../utils/helpers'
+import { cn, isPS5, isIOS, parsePayloadName } from '../../utils/helpers'
 import PayloadName from '../ui/PayloadName'
 
 const StorageHub = ({ payloads, payloadMeta, onInstall, onDelete, onUpload, onImportFromUsb, config, ip, scrollTarget, onClearScrollTarget }) => {
@@ -62,7 +62,7 @@ const StorageHub = ({ payloads, payloadMeta, onInstall, onDelete, onUpload, onIm
 
   const getBaseName = (filename) => {
     if (!filename) return '';
-    let clean = filename.replace(/\.(elf|bin|lua)$/i, '');
+    let clean = filename.replace(/\.(elf|bin)$/i, '');
     const versionMatch = clean.match(/[_-]v?(\d+[\d.a-z-]+)/i);
     if (versionMatch) clean = clean.replace(versionMatch[0], '');
     return clean.replace(/[_-]ps[45]$/i, '');
@@ -125,7 +125,7 @@ const StorageHub = ({ payloads, payloadMeta, onInstall, onDelete, onUpload, onIm
           <label className="inline-flex items-center space-x-4 px-10 py-5 bg-ps-blue hover:bg-ps-blue/80 text-white rounded-[1.25rem] font-bold tracking-tight text-xl cursor-pointer transition-all shrink-0 transform active:scale-95">
             <Upload className="w-7 h-7" />
             <span>Upload ELF Payload</span>
-            <input type="file" className="hidden" onChange={onUpload} accept=".elf,.bin,.lua" />
+            <input type="file" className="hidden" onChange={onUpload} accept={isIOS ? undefined : ".elf,.bin"} />
           </label>
         )}
       </div>
