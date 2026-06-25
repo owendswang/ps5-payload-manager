@@ -110,7 +110,8 @@ static int save_sources(SourceEntry *sources, int count) {
 /* ── Public API ────────────────────────────────────────────── */
 
 int sources_list_json(char *buf, size_t size) {
-    SourceEntry sources[MAX_SOURCES] = {0};
+    SourceEntry *sources = calloc(MAX_SOURCES, sizeof(SourceEntry));
+    if (!sources) return -1;
     int count = 0;
     load_sources(sources, &count);
 
@@ -131,14 +132,19 @@ int sources_list_json(char *buf, size_t size) {
         }
     }
     json_append(&jb, "]}\n");
+    free(sources);
     return 0;
 }
 
 int sources_save(const char *json, size_t len) {
-    SourceEntry sources[MAX_SOURCES] = {0};
+    SourceEntry *sources = calloc(MAX_SOURCES, sizeof(SourceEntry));
+    if (!sources) return -1;
     int count = 0;
 
-    if (!json || len == 0) return -1;
+    if (!json || len == 0) {
+        free(sources);
+        return -1;
+    }
 
     /* Always put default at slot 0 */
     strncpy(sources[0].id,   "default",             sizeof(sources[0].id) - 1);
@@ -148,9 +154,9 @@ int sources_save(const char *json, size_t len) {
     count = 1;
 
     const char *arr_start = strstr(json, "\"sources\"");
-    if (!arr_start) return -1;
+    if (!arr_start) { free(sources); return -1; }
     arr_start = strchr(arr_start, '[');
-    if (!arr_start) return -1;
+    if (!arr_start) { free(sources); return -1; }
 
     const char *p = arr_start + 1;
     while (count < MAX_SOURCES && (p = strchr(p, '{')) != NULL) {
@@ -173,7 +179,9 @@ int sources_save(const char *json, size_t len) {
         p = end + 1;
     }
 
-    return save_sources(sources, count);
+    int ret = save_sources(sources, count);
+    free(sources);
+    return ret;
 }
 
 int sources_add(const char *url, char *msg_buf, size_t msg_size) {
@@ -257,11 +265,16 @@ int sources_add(const char *url, char *msg_buf, size_t msg_size) {
     free(json);
 
     /* Load current sources and append */
-    SourceEntry sources[MAX_SOURCES] = {0};
+    SourceEntry *sources = calloc(MAX_SOURCES, sizeof(SourceEntry));
+    if (!sources) {
+        snprintf(msg_buf, msg_size, "Memory allocation failed");
+        return -1;
+    }
     int src_count = 0;
     load_sources(sources, &src_count);
 
     if (src_count >= MAX_SOURCES) {
+        free(sources);
         snprintf(msg_buf, msg_size, "Maximum number of sources (%d) reached", MAX_SOURCES);
         return -1;
     }
@@ -269,6 +282,7 @@ int sources_add(const char *url, char *msg_buf, size_t msg_size) {
     /* Check for duplicate URL */
     for (int i = 0; i < src_count; i++) {
         if (strcmp(sources[i].url, url) == 0) {
+            free(sources);
             snprintf(msg_buf, msg_size, "Source already added");
             return -1;
         }
@@ -285,10 +299,12 @@ int sources_add(const char *url, char *msg_buf, size_t msg_size) {
     src_count++;
 
     if (save_sources(sources, src_count) != 0) {
+        free(sources);
         snprintf(msg_buf, msg_size, "Failed to save sources");
         return -1;
     }
 
+    free(sources);
     /* Return the source name in msg_buf for the caller to forward to the UI */
     snprintf(msg_buf, msg_size, "%s", source_name);
     return 0;
@@ -300,11 +316,16 @@ int sources_remove(int index, char *msg_buf, size_t msg_size) {
         return -1;
     }
 
-    SourceEntry sources[MAX_SOURCES] = {0};
+    SourceEntry *sources = calloc(MAX_SOURCES, sizeof(SourceEntry));
+    if (!sources) {
+        snprintf(msg_buf, msg_size, "Memory allocation failed");
+        return -1;
+    }
     int count = 0;
     load_sources(sources, &count);
 
     if (index >= count) {
+        free(sources);
         snprintf(msg_buf, msg_size, "Invalid source index");
         return -1;
     }
@@ -316,10 +337,12 @@ int sources_remove(int index, char *msg_buf, size_t msg_size) {
     count--;
 
     if (save_sources(sources, count) != 0) {
+        free(sources);
         snprintf(msg_buf, msg_size, "Failed to save sources");
         return -1;
     }
 
+    free(sources);
     snprintf(msg_buf, msg_size, "OK");
     return 0;
 }
@@ -399,7 +422,11 @@ static int ensure_source_fresh(const char *url, const char *cache_path, int forc
 }
 
 size_t sources_multi_repository_list_json(char *buf, size_t size, int force_refresh) {
-    SourceEntry sources[MAX_SOURCES] = {0};
+    SourceEntry *sources = calloc(MAX_SOURCES, sizeof(SourceEntry));
+    if (!sources) {
+        buf[0] = '\0';
+        return 0;
+    }
     int src_count = 0;
     load_sources(sources, &src_count);
 
@@ -444,7 +471,7 @@ size_t sources_multi_repository_list_json(char *buf, size_t size, int force_refr
             for (size_t pi = 0; pi < count; pi++) {
                 char name_pe[256], filename_e[512], desc_e[2048];
                 char ver_e[128], url_e[2048], src_id_e[128], src_name_e[512];
-                char last_upd_e[128];
+                char last_upd_e[128], cat_e[256];
 
                 pldmgr_json_escape(items[pi].name,        name_pe,    sizeof(name_pe));
                 pldmgr_json_escape(items[pi].filename,    filename_e, sizeof(filename_e));
@@ -452,14 +479,15 @@ size_t sources_multi_repository_list_json(char *buf, size_t size, int force_refr
                 pldmgr_json_escape(items[pi].version,     ver_e,      sizeof(ver_e));
                 pldmgr_json_escape(items[pi].url,         url_e,      sizeof(url_e));
                 pldmgr_json_escape(items[pi].last_update, last_upd_e, sizeof(last_upd_e));
+                pldmgr_json_escape(items[pi].category,    cat_e,      sizeof(cat_e));
                 pldmgr_json_escape(sources[si].id,        src_id_e,   sizeof(src_id_e));
                 pldmgr_json_escape(sources[si].name,      src_name_e, sizeof(src_name_e));
 
                 if (json_append(&jb, "    {\"name\":\"%s\",\"filename\":\"%s\",\"description\":\"%s\","
                     "\"version\":\"%s\",\"last_update\":\"%s\",\"url\":\"%s\","
-                    "\"source_id\":\"%s\",\"source_name\":\"%s\"}%s\n",
+                    "\"source_id\":\"%s\",\"source_name\":\"%s\",\"category\":\"%s\"}%s\n",
                     name_pe, filename_e, desc_e, ver_e, last_upd_e, url_e,
-                    src_id_e, src_name_e,
+                    src_id_e, src_name_e, cat_e,
                     (pi < count - 1) ? "," : "") != 0) {
                     break;
                 }
@@ -474,12 +502,17 @@ size_t sources_multi_repository_list_json(char *buf, size_t size, int force_refr
     }
 
     json_append(&jb, "]}\n");
+    free(sources);
     return jb.pos;
 }
 
 int sources_multi_repository_install(const char *filename, const char *source_id,
                                      const char *repo_url, char *msg, size_t msg_size) {
-    SourceEntry sources[MAX_SOURCES] = {0};
+    SourceEntry *sources = calloc(MAX_SOURCES, sizeof(SourceEntry));
+    if (!sources) {
+        snprintf(msg, msg_size, "Memory allocation failed");
+        return -1;
+    }
     int src_count = 0;
     load_sources(sources, &src_count);
 
@@ -507,6 +540,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
     /* Ensure cache is fresh */
     if (access(cache_path, F_OK) != 0) {
         if (ensure_source_fresh(sources[si].url, cache_path, 1) != 0) {
+            free(sources);
             snprintf(msg, msg_size, "Failed to fetch source repository");
             return -1;
         }
@@ -519,6 +553,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
     size_t count = 0;
 
     if (read_file_text(cache_path, &cached, &cached_size) != 0 || !cached) {
+        free(sources);
         snprintf(msg, msg_size, "Repository cache unavailable");
         return -1;
     }
@@ -534,6 +569,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
 
     if (found < 0) {
         if (items) free(items);
+        free(sources);
         snprintf(msg, msg_size, "Payload not found in source");
         return -1;
     }
@@ -545,6 +581,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
 
     if (download_to_file(items[found].url, tmp_path) != 0) {
         if (items) free(items);
+        free(sources);
         remove(tmp_path);
         snprintf(msg, msg_size, "Download failed");
         return -1;
@@ -563,6 +600,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
 
     if (ensure_dir_recursive(payload_dir) != 0) {
         if (items) free(items);
+        free(sources);
         remove(tmp_path);
         snprintf(msg, msg_size, "Failed to create payload directory");
         return -1;
@@ -576,6 +614,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
         char calculated[65];
         if (compute_sha256_file(tmp_path, calculated) != 0) {
             if (items) free(items);
+            free(sources);
             remove(tmp_path);
             snprintf(msg, msg_size, "Checksum computation failed");
             return -1;
@@ -583,6 +622,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
         if (strcasecmp(calculated, items[found].checksum) != 0) {
             pldmgr_log("[PLDMGR] !!! Checksum mismatch for %s\n", items[found].filename);
             if (items) free(items);
+            free(sources);
             remove(tmp_path);
             snprintf(msg, msg_size, "Checksum mismatch");
             return -1;
@@ -593,6 +633,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
 
     if (rename(tmp_path, final_path) != 0) {
         if (items) free(items);
+        free(sources);
         remove(tmp_path);
         snprintf(msg, msg_size, "Failed to finalize payload file");
         return -1;
@@ -605,6 +646,7 @@ int sources_multi_repository_install(const char *filename, const char *source_id
 
     if (write_payload_details_json(&items[found], details_path, "repository", detail) != 0) {
         if (items) free(items);
+        free(sources);
         snprintf(msg, msg_size, "Failed to write payload metadata");
         return -1;
     }
@@ -613,5 +655,6 @@ int sources_multi_repository_install(const char *filename, const char *source_id
                items[found].filename, sources[si].name);
     snprintf(msg, msg_size, "Installed %s", items[found].filename);
     if (items) free(items);
+    free(sources);
     return 0;
 }

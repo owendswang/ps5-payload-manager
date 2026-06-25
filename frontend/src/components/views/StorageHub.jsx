@@ -4,6 +4,71 @@ import { QRCodeSVG } from 'qrcode.react'
 import { cn, isPS5, isIOS, parsePayloadName } from '../../utils/helpers'
 import PayloadName from '../ui/PayloadName'
 
+const PayloadItem = ({ p, multiSources, isPS5, onInstall, srcId, srcUrl }) => (
+  <div
+    className={cn(
+      "flex flex-col md:flex-row justify-between gap-4 md:gap-8 p-6 md:p-8 transition-all",
+      multiSources
+        ? "hover:bg-white/[0.03]"
+        : "glass-card rounded-ps-3xl border border-white/10 hover:border-ps-blue/20 bg-white/[0.01]",
+      isPS5 ? "flex-row items-center" : "items-start md:items-center"
+    )}
+  >
+    <div className="space-y-2 min-w-0">
+      <PayloadName path={p.filename} className="text-xl md:text-2xl text-white" stacked lastUpdate={p.last_update} />
+      {p.description && (
+        <p className="text-sm md:text-base text-zinc-400 font-medium leading-relaxed">{p.description}</p>
+      )}
+    </div>
+    <button
+      onClick={() => onInstall(p, srcId === 'legacy-repo' ? null : srcId, srcUrl)}
+      className={cn(
+        "flex items-center justify-center space-x-3 px-6 md:px-8 py-3 md:py-5 rounded-2xl font-bold text-lg transition-all shrink-0 transform active:scale-95",
+        isPS5 ? "w-auto px-12" : "w-full md:w-auto",
+        p.isUpdate
+          ? "bg-emerald-600 hover:bg-emerald-500 text-white"
+          : "bg-ps-blue hover:bg-ps-blue/80 text-white"
+      )}
+    >
+      <CloudDownload className="w-5 h-5 md:w-6 md:h-6" />
+      <span>{p.isUpdate ? "Update" : "Install"}</span>
+    </button>
+  </div>
+)
+
+const CategoryGroup = ({ category, payloads, multiSources, isPS5, onInstall, srcId, srcUrl, defaultExpanded = false }) => {
+  const [expanded, setExpanded] = useState(defaultExpanded)
+  return (
+    <div className="border-b border-white/5 last:border-0">
+      <button 
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between p-4 md:p-6 hover:bg-white/5 transition-colors"
+      >
+        <span className="font-bold text-white/80 uppercase tracking-widest text-sm">{category} ({payloads.length})</span>
+        <ChevronDown className={cn("w-5 h-5 text-zinc-500 transition-transform", expanded && "rotate-180")} />
+      </button>
+      {expanded && (
+        <div className={cn(
+          multiSources ? "divide-y divide-white/5 bg-black/20" : "grid grid-cols-1 gap-4 p-4",
+          "border-t border-white/5"
+        )}>
+          {payloads.map(p => (
+            <PayloadItem 
+              key={p.filename} 
+              p={p} 
+              multiSources={multiSources} 
+              isPS5={isPS5} 
+              onInstall={onInstall} 
+              srcId={srcId} 
+              srcUrl={srcUrl} 
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const StorageHub = ({ payloads, payloadMeta, onInstall, onDelete, onUpload, onImportFromUsb, config, ip, scrollTarget, onClearScrollTarget }) => {
   const multiSources = config?.MULTI_SOURCES_ENABLED === true
 
@@ -233,6 +298,16 @@ const StorageHub = ({ payloads, payloadMeta, onInstall, onDelete, onUpload, onIm
               // Auto-expand if there's only 1 source, otherwise respect state
               const isExpanded = (enrichedSources.length === 1) || expandedSource === src.id
 
+              const groupedPayloads = availablePayloads.reduce((acc, p) => {
+                const cat = p.category || 'Uncategorized'
+                if (!acc[cat]) acc[cat] = []
+                acc[cat].push(p)
+                return acc
+              }, {})
+              
+              const categories = Object.keys(groupedPayloads).sort()
+              const hasMultipleCategories = categories.length > 1
+
               return (
                 <div key={src.id} className={cn(
                   multiSources ? "bg-ps-card border border-ps-border rounded-ps-3xl overflow-hidden" : "flex flex-col space-y-4"
@@ -293,38 +368,31 @@ const StorageHub = ({ payloads, payloadMeta, onInstall, onDelete, onUpload, onIm
                         <div className="py-12 flex flex-col items-center justify-center space-y-3 text-zinc-600">
                           <p className="text-sm font-bold uppercase tracking-widest italic">All payloads installed</p>
                         </div>
+                      ) : hasMultipleCategories ? (
+                        categories.map(cat => (
+                          <CategoryGroup
+                            key={cat}
+                            category={cat}
+                            payloads={groupedPayloads[cat]}
+                            multiSources={multiSources}
+                            isPS5={isPS5}
+                            onInstall={onInstall}
+                            srcId={src.id}
+                            srcUrl={src.url}
+                            defaultExpanded={availablePayloads.length <= 10}
+                          />
+                        ))
                       ) : (
                         availablePayloads.map(p => (
-                          <div
-                            key={p.filename}
-                            className={cn(
-                              "flex flex-col md:flex-row justify-between gap-4 md:gap-8 p-6 md:p-8 transition-all",
-                              multiSources
-                                ? "hover:bg-white/[0.03]"
-                                : "glass-card rounded-ps-3xl border border-white/10 hover:border-ps-blue/20 bg-white/[0.01]",
-                              isPS5 ? "flex-row items-center" : "items-start md:items-center"
-                            )}
-                          >
-                            <div className="space-y-2 min-w-0">
-                              <PayloadName path={p.filename} className="text-xl md:text-2xl text-white" stacked lastUpdate={p.last_update} />
-                              {p.description && (
-                                <p className="text-sm md:text-base text-zinc-400 font-medium leading-relaxed">{p.description}</p>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => onInstall(p, src.id === 'legacy-repo' ? null : src.id, src.url)}
-                              className={cn(
-                                "flex items-center justify-center space-x-3 px-6 md:px-8 py-3 md:py-5 rounded-2xl font-bold text-lg transition-all shrink-0 transform active:scale-95",
-                                isPS5 ? "w-auto px-12" : "w-full md:w-auto",
-                                p.isUpdate
-                                  ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                                  : "bg-ps-blue hover:bg-ps-blue/80 text-white"
-                              )}
-                            >
-                              <CloudDownload className="w-5 h-5 md:w-6 md:h-6" />
-                              <span>{p.isUpdate ? "Update" : "Install"}</span>
-                            </button>
-                          </div>
+                          <PayloadItem 
+                            key={p.filename} 
+                            p={p} 
+                            multiSources={multiSources} 
+                            isPS5={isPS5} 
+                            onInstall={onInstall} 
+                            srcId={src.id} 
+                            srcUrl={src.url} 
+                          />
                         ))
                       )}
                     </div>

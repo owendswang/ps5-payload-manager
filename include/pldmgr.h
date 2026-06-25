@@ -57,7 +57,7 @@ int pldmgr_server_is_active();
 /* Paths */
 #define BASE_DATA_DIR "/data/pldmgr"
 #define SOURCES_CONFIG_PATH "/data/pldmgr/sources.json"
-#define MAX_SOURCES 9
+#define MAX_SOURCES 50
 
 /* Scan Locations (Internal + 8 USB ports) */
 static const char *SCAN_DIRS[] = {

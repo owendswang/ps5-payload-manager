@@ -140,6 +140,10 @@ int parse_repository_payloads(const char *json, RepoPayload **out_items, size_t 
         json_extract_string(p, end, "last_update", item.last_update, sizeof(item.last_update));
         json_extract_string(p, end, "version", item.version, sizeof(item.version));
         json_extract_string(p, end, "checksum", item.checksum, sizeof(item.checksum));
+        
+        if (json_extract_string(p, end, "category", item.category, sizeof(item.category)) != 0 || strlen(item.category) == 0) {
+            strncpy(item.category, "Uncategorized", sizeof(item.category) - 1);
+        }
 
         tmp = (RepoPayload *)realloc(items, (count + 1) * sizeof(RepoPayload));
         if (!tmp) {
@@ -178,7 +182,7 @@ static int load_cached_repository(RepoPayload **out_items, size_t *out_count) {
 int write_payload_details_json(const RepoPayload *item, const char *details_path,
                                const char *install_source, const char *install_source_detail) {
     char name[256], filename[384], url[1400], source[1400], source_direct[1400];
-    char description[1400], last_update[128], version[128], checksum[128];
+    char description[1400], last_update[128], version[128], checksum[128], category[256];
     char downloaded_at[64], i_src[256], i_detail[1400], i_src_name[256];
     char json_buf[8192];
     time_t now = time(NULL);
@@ -197,6 +201,7 @@ int write_payload_details_json(const RepoPayload *item, const char *details_path
     pldmgr_json_escape(item->last_update, last_update, sizeof(last_update));
     pldmgr_json_escape(item->version, version, sizeof(version));
     pldmgr_json_escape(item->checksum, checksum, sizeof(checksum));
+    pldmgr_json_escape(item->category, category, sizeof(category));
     pldmgr_json_escape(install_source ? install_source : "unknown", i_src, sizeof(i_src));
     pldmgr_json_escape(install_source_detail ? install_source_detail : "", i_detail, sizeof(i_detail));
     pldmgr_json_escape(item->source_name[0] ? item->source_name : "", i_src_name, sizeof(i_src_name));
@@ -212,13 +217,14 @@ int write_payload_details_json(const RepoPayload *item, const char *details_path
              "  \"last_update\": \"%s\",\n"
              "  \"version\": \"%s\",\n"
              "  \"checksum\": \"%s\",\n"
+             "  \"category\": \"%s\",\n"
              "  \"downloaded_at\": \"%s\",\n"
              "  \"install_source\": \"%s\",\n"
              "  \"install_source_detail\": \"%s\",\n"
              "  \"source_name\": \"%s\"\n"
              "}\n",
              name, filename, url, source, source_direct, description,
-             last_update, version, checksum, downloaded_at, i_src, i_detail,
+             last_update, version, checksum, category, downloaded_at, i_src, i_detail,
              i_src_name);
 
     FILE *f = fopen(details_path, "w");

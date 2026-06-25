@@ -15,6 +15,7 @@ typedef struct RepoPayload {
     char version[64];
     char checksum[65];
     char source_name[256];
+    char category[128];
 } RepoPayload;
 
 /* Download a URL to a local file. Returns 0 on success, -1 on failure. */

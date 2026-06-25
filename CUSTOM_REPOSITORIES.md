@@ -24,6 +24,7 @@ To create a repository, you must host a JSON file that conforms to the following
       "url": "https://example.com/payloads/ftpsrv_v0.19.elf",
       "description": "A simple FTP server that accepts connections on port 2121",
       "version": "v0.19",
+      "category": "Networking",
       "checksum": "e6c1babbfd5e1b766d12b659853b514b9faedf6333cbe8cb514b1a3e79b7ce39"
     },
     {
@@ -48,6 +49,7 @@ To create a repository, you must host a JSON file that conforms to the following
 | **`url`** (item-level) | String | Yes | Direct HTTP or HTTPS link where the payload binary can be downloaded. |
 | **`description`** (item-level) | String | No | A description of what the payload does, displayed in the dashboard. |
 | **`version`** (item-level) | String | No | Version string used for update checks (e.g. `"v1.0"`). |
+| **`category`** (item-level) | String | No | The category name used to group payloads in the frontend (e.g. `"Networking"`). Defaults to `"Uncategorized"`. |
 | **`checksum`** (item-level) | String | No | **SHA-256** hash (64 hex characters) of the file. If provided, the manager automatically validates the downloaded file against it before installation. |
 
 ---
