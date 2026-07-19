@@ -367,9 +367,10 @@ const StorageHub = ({ payloads, payloadMeta, onInstall, onDelete, onUpload, onIm
 
               if (sortMode === 'category' && search.trim() === '') {
                 groupedPayloads = availablePayloads.reduce((acc, p) => {
-                  const cat = p.category || t("storage_hub.uncategorized", "Uncategorized")
-                  if (!acc[cat]) acc[cat] = []
-                  acc[cat].push(p)
+                  // If p.category exists, attempt to translate it using its English name as key.
+                  const catName = p.category ? t(`category.${p.category}`, p.category) : t("storage_hub.uncategorized", "Uncategorized")
+                  if (!acc[catName]) acc[catName] = []
+                  acc[catName].push(p)
                   return acc
                 }, {})
                 categories = Object.keys(groupedPayloads).sort()
