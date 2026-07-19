@@ -1,3 +1,16 @@
+## v0.4.0
+
+### 🚀 Features & UX Improvements
+* **Translations**: Added localization support (i18n) for the web dashboard.
+* **New Languages**: 
+  * **Chinese Simplified** (thanks to @owendswang)
+  * **Polish**
+
+### 🛠️ Backend & Bug Fixes
+* **Static Linking**: Statically link third-party dependencies in the build script to prevent dynamic linking issues (thanks to @owendswang in [#66](https://github.com/itsPLK/ps5-payload-manager/pull/66)).
+
+**Full Changelog**: [v0.3.3...v0.4.0](https://github.com/itsPLK/ps5-payload-manager/compare/v0.3.3...v0.4.0)
+
 ## v0.3.3
 
 ### 🚀 Features & UX Improvements
