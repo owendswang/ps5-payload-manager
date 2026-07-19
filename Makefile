@@ -9,7 +9,14 @@ STRIP  := /opt/ps5-payload-sdk/bin/prospero-strip
 SDK      := /opt/ps5-payload-sdk
 TARGET   := $(SDK)/target
 INCLUDES := -Iinclude -I$(TARGET)/include
-LIBS     := -L$(TARGET)/lib -lcurl -lmbedtls -lmbedx509 -lmbedcrypto -lmicrohttpd -lpthread -lSceNetCtl -lSceUserService -lSceSystemService -lSceAppInstUtil -lSceHttp2 -lSceSsl -lSceNet
+LIBS     := $(TARGET)/lib/libcurl.a \
+            $(TARGET)/lib/libmbedtls.a \
+            $(TARGET)/lib/libmbedx509.a \
+            $(TARGET)/lib/libmbedcrypto.a \
+            $(TARGET)/lib/libmicrohttpd.a \
+            -L$(TARGET)/lib -lpthread \
+            -lSceNetCtl -lSceUserService -lSceSystemService \
+            -lSceAppInstUtil -lSceHttp2 -lSceSsl -lSceNet
 
 # Source Files
 SRCS := src/main.c src/http_server.c src/config.c src/log_server.c \
