@@ -4,8 +4,98 @@
     "deeplinkUri": "http://127.0.0.1:8084/",
     "localizedParameters": {
         "defaultLanguage": "en-US",
+        "ar-AE": {
+            "titleName": "Payload Manager"
+        },
+        "cs-CZ": {
+            "titleName": "Payload Manager"
+        },
+        "da-DK": {
+            "titleName": "Payload Manager"
+        },
+        "de-DE": {
+            "titleName": "Payload Manager"
+        },
+        "el-GR": {
+            "titleName": "Payload Manager"
+        },
+        "en-GB": {
+            "titleName": "Payload Manager"
+        },
         "en-US": {
             "titleName": "Payload Manager"
+        },
+        "es-419": {
+            "titleName": "Payload Manager"
+        },
+        "es-ES": {
+            "titleName": "Payload Manager"
+        },
+        "fi-FI": {
+            "titleName": "Payload Manager"
+        },
+        "fr-CA": {
+            "titleName": "Payload Manager"
+        },
+        "fr-FR": {
+            "titleName": "Payload Manager"
+        },
+        "hu-HU": {
+            "titleName": "Payload Manager"
+        },
+        "id-ID": {
+            "titleName": "Payload Manager"
+        },
+        "it-IT": {
+            "titleName": "Payload Manager"
+        },
+        "ja-JP": {
+            "titleName": "Payload Manager"
+        },
+        "ko-KR": {
+            "titleName": "Payload Manager"
+        },
+        "nl-NL": {
+            "titleName": "Payload Manager"
+        },
+        "no-NO": {
+            "titleName": "Payload Manager"
+        },
+        "pl-PL": {
+            "titleName": "Payload Manager"
+        },
+        "pt-BR": {
+            "titleName": "Payload Manager"
+        },
+        "pt-PT": {
+            "titleName": "Payload Manager"
+        },
+        "ro-RO": {
+            "titleName": "Payload Manager"
+        },
+        "ru-RU": {
+            "titleName": "Payload Manager"
+        },
+        "sv-SE": {
+            "titleName": "Payload Manager"
+        },
+        "th-TH": {
+            "titleName": "Payload Manager"
+        },
+        "tr-TR": {
+            "titleName": "Payload Manager"
+        },
+        "uk-UA": {
+            "titleName": "Payload Manager"
+        },
+        "vi-VN": {
+            "titleName": "Payload Manager"
+        },
+        "zh-Hans": {
+            "titleName": "Payload 管理器"
+        },
+        "zh-Hant": {
+            "titleName": "Payload 管理器"
         }
     }
 }
