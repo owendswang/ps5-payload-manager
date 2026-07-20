@@ -101,7 +101,7 @@ const SettingsView = ({ config, onSaveConfig, setShowLogs, onNavigate }) => {
               <div className="relative w-full bg-black/50 border border-white/10 text-white rounded-xl px-4 py-3 font-bold tracking-tight hover:bg-white/5 transition-all overflow-hidden flex items-center justify-between">
                 <span>
                   {followBrowserLanguage
-                    ? t("settings.language_follow_browser", "Follow browser/system language")
+                    ? t("settings.language_system_default", "System Default")
                     : getLanguageDisplayName(currentLang)}
                 </span>
                 <ChevronRight className="w-5 h-5 text-zinc-500 rotate-90" />
@@ -111,7 +111,7 @@ const SettingsView = ({ config, onSaveConfig, setShowLogs, onNavigate }) => {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 >
                   <option value={FOLLOW_BROWSER_LANGUAGE} className="bg-[#121214]">
-                    {t("settings.language_follow_browser", "Follow browser/system language")}
+                    {t("settings.language_system_default", "System Default")}
                   </option>
                   {Object.keys(i18n.store.data).map(lang => (
                     <option key={lang} value={lang} className="bg-[#121214]">{getLanguageDisplayName(lang)}</option>
