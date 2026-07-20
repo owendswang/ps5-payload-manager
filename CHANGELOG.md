@@ -1,5 +1,20 @@
-## v0.4.1
+## v0.4.2
 
+### 🚀 Features & UX Improvements
+* **System Language Support**: Added a "System Default" option in Settings to dynamically follow the OS/browser language ([#69](https://github.com/itsPLK/ps5-payload-manager/pull/69)).
+* **New Languages**:
+  * **German** (thanks to xEasy4Breezy)
+  * **Persian** (thanks to Epinor)
+  * **Spanish** (thanks to Slayver95, kXmpX)
+  * **Turkish** (thanks to Sezar61)
+  * **Ukrainian** (thanks to Mikeeee)
+
+### 🛠️ Backend & Bug Fixes
+* **Build Script**: Fixed an issue where translation files could sometimes be missing when compiling releases from source (thanks to @owendswang).
+
+**Full Changelog**: [v0.4.1...v0.4.2](https://github.com/itsPLK/ps5-payload-manager/compare/v0.4.1...v0.4.2)
+
+## v0.4.1
 ### 🚀 Features & UX Improvements
 * **Translations**: Updated existing translations and added new languages.
 * **New Languages**:
