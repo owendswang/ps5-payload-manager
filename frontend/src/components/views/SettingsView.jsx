@@ -1,7 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Terminal, ChevronRight, Globe, Languages } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '../../utils/helpers'
+
+const FOLLOW_BROWSER_LANGUAGE = '__auto__'
+
+const isFollowingBrowserLanguage = () => {
+  try {
+    return !localStorage.getItem('i18nextLng')
+  } catch {
+    return true
+  }
+}
 
 const SettingRow = ({ title, description, children, icon: Icon, vertical }) => (
   <div className={cn(
@@ -36,6 +46,7 @@ const SettingsView = ({ config, onSaveConfig, setShowLogs, onNavigate }) => {
   const autoInstall = config.AUTO_INSTALL_APP !== false
   const autoloadDelay = config.AUTOLOAD_DELAY || 5
   const multiSources = config.MULTI_SOURCES_ENABLED === true
+  const [followBrowserLanguage, setFollowBrowserLanguage] = useState(isFollowingBrowserLanguage)
 
   const getLanguageDisplayName = (lang) => {
     let displayName = lang;
@@ -44,11 +55,30 @@ const SettingsView = ({ config, onSaveConfig, setShowLogs, onNavigate }) => {
       const lookupLang = lang.startsWith('zh') ? lang : baseLang;
       displayName = new Intl.DisplayNames([lang], { type: 'language' }).of(lookupLang);
       displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
-    } catch(e) {}
+    } catch {
+      return lang;
+    }
     return displayName;
   };
 
   const currentLang = i18n.resolvedLanguage || i18n.language || 'en';
+  const selectedLanguage = followBrowserLanguage ? FOLLOW_BROWSER_LANGUAGE : currentLang;
+
+  const handleLanguageChange = async (event) => {
+    const language = event.target.value;
+    const followBrowser = language === FOLLOW_BROWSER_LANGUAGE;
+    setFollowBrowserLanguage(followBrowser);
+    try {
+      if (followBrowser) {
+        localStorage.removeItem('i18nextLng');
+      } else {
+        localStorage.setItem('i18nextLng', language);
+      }
+    } catch {
+      // Continue with an in-memory language change if storage is unavailable.
+    }
+    await i18n.changeLanguage(followBrowser ? undefined : language);
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-16 pb-20">
@@ -69,13 +99,20 @@ const SettingsView = ({ config, onSaveConfig, setShowLogs, onNavigate }) => {
           >
             <div className="flex flex-col items-start space-y-2 w-full">
               <div className="relative w-full bg-black/50 border border-white/10 text-white rounded-xl px-4 py-3 font-bold tracking-tight hover:bg-white/5 transition-all overflow-hidden flex items-center justify-between">
-                <span>{getLanguageDisplayName(currentLang)}</span>
+                <span>
+                  {followBrowserLanguage
+                    ? t("settings.language_follow_browser", "Follow browser/system language")
+                    : getLanguageDisplayName(currentLang)}
+                </span>
                 <ChevronRight className="w-5 h-5 text-zinc-500 rotate-90" />
                 <select
-                  value={currentLang}
-                  onChange={(e) => i18n.changeLanguage(e.target.value)}
+                  value={selectedLanguage}
+                  onChange={handleLanguageChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 >
+                  <option value={FOLLOW_BROWSER_LANGUAGE} className="bg-[#121214]">
+                    {t("settings.language_follow_browser", "Follow browser/system language")}
+                  </option>
                   {Object.keys(i18n.store.data).map(lang => (
                     <option key={lang} value={lang} className="bg-[#121214]">{getLanguageDisplayName(lang)}</option>
                   ))}

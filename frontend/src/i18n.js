@@ -54,7 +54,8 @@ i18n
     // Default to detected browser language on first load, and load from localStorage if previously selected
     detection: {
       order: ['localStorage', 'navigator'],
-      caches: ['localStorage']
+      // Only explicit selections are persisted by changeLanguagePreference.
+      caches: []
     },
     
     // We use the 'natural' naming strategy: keys are strings in English
