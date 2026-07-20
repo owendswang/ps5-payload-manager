@@ -49,6 +49,7 @@ all: $(ELF)
 .PHONY: frontend-build
 frontend-build:
 	@echo "Building frontend..."
+	git submodule update --init --recursive
 	cd frontend && npm install && npm run build
 	@VERSION=$$(grep '#define MENU_VERSION' include/pldmgr.h | awk '{print $$3}' | tr -d '"'); \
 	COMMIT=$$(git rev-parse --short HEAD 2>/dev/null || echo "unknown"); \
