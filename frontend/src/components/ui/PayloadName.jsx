@@ -5,13 +5,12 @@ import { useTranslation } from 'react-i18next'
 
 const PayloadName = ({ path, version: repoVersion, className, versionClassName, stacked = false, hideIcon = false, lastUpdate = null }) => {
   const { t } = useTranslation();
-  let { displayName, version, isDelay } = parsePayloadName(path);
+  let { displayName, version, isDelay, delaySeconds } = parsePayloadName(path);
   const isUsb = path?.startsWith('/mnt/usb');
 
   if (repoVersion) version = repoVersion;
   if (isDelay) {
-    const milliseconds = parseInt(path.slice(1), 10) || 1000;
-    displayName = t("autoload.delay_item", "Delay ({{seconds}}s)", { seconds: milliseconds / 1000 });
+    displayName = t("autoload.delay_item", "Delay ({{seconds}}s)", { seconds: delaySeconds || 1 });
   }
 
   return (

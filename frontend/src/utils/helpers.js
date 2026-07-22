@@ -12,7 +12,7 @@ export const parsePayloadName = (path) => {
   if (!path) return { displayName: '', version: null };
   if (path.startsWith('!')) {
     const ms = parseInt(path.substring(1));
-    return { displayName: `Delay (${ms / 1000}s)`, version: null, isDelay: true };
+    return { displayName: `Delay (${ms / 1000}s)`, version: null, isDelay: true, delaySeconds: ms / 1000 };
   }
 
   let name = path.split('/').pop().replace(/\.(elf|bin)$/i, '');
