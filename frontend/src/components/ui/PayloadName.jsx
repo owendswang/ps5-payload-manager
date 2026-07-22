@@ -1,12 +1,18 @@
 import React from 'react'
 import { Zap, Usb } from 'lucide-react'
 import { cn, parsePayloadName } from '../../utils/helpers'
+import { useTranslation } from 'react-i18next'
 
 const PayloadName = ({ path, version: repoVersion, className, versionClassName, stacked = false, hideIcon = false, lastUpdate = null }) => {
+  const { t } = useTranslation();
   let { displayName, version, isDelay } = parsePayloadName(path);
   const isUsb = path?.startsWith('/mnt/usb');
 
   if (repoVersion) version = repoVersion;
+  if (isDelay) {
+    const milliseconds = parseInt(path.slice(1), 10) || 1000;
+    displayName = t("autoload.delay_item", "Delay ({{seconds}}s)", { seconds: milliseconds / 1000 });
+  }
 
   return (
     <div className={cn("flex min-w-0 flex-1 w-full", stacked ? "flex-col items-stretch" : "items-center space-x-3", className)}>
