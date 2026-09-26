@@ -25,6 +25,19 @@ typedef struct {
 
 /* ── Load / Save sources from SOURCES_CONFIG_PATH ──────────── */
 
+static int add_builtin_sources(SourceEntry *sources) {
+    strncpy(sources[0].id,   "default",             sizeof(sources[0].id) - 1);
+    strncpy(sources[0].name, "Official Repository", sizeof(sources[0].name) - 1);
+    strncpy(sources[0].url,  REPOSITORY_SOURCE_URL, sizeof(sources[0].url) - 1);
+    sources[0].removable = 0;
+
+    strncpy(sources[1].id,   "secondary",             sizeof(sources[1].id) - 1);
+    strncpy(sources[1].name, "Secondary Repository", sizeof(sources[1].name) - 1);
+    strncpy(sources[1].url,  SECONDARY_REPOSITORY_SOURCE_URL, sizeof(sources[1].url) - 1);
+    sources[1].removable = 0;
+    return 2;
+}
+
 static int load_sources(SourceEntry *out, int *out_count) {
     char *json = NULL;
     size_t size = 0;
@@ -32,12 +45,8 @@ static int load_sources(SourceEntry *out, int *out_count) {
 
     memset(out, 0, sizeof(SourceEntry) * MAX_SOURCES);
 
-    /* Always start with the default source at index 0 */
-    strncpy(out[0].id,   "default",             sizeof(out[0].id) - 1);
-    strncpy(out[0].name, "Official Repository", sizeof(out[0].name) - 1);
-    strncpy(out[0].url,  REPOSITORY_SOURCE_URL, sizeof(out[0].url) - 1);
-    out[0].removable = 0;
-    count = 1;
+    /* Keep the two built-in sources at indexes 0 and 1. */
+    count = add_builtin_sources(out);
 
     if (read_file_text(SOURCES_CONFIG_PATH, &json, &size) != 0 || !json || size == 0) {
         if (json) free(json);
@@ -65,8 +74,11 @@ static int load_sources(SourceEntry *out, int *out_count) {
         json_extract_string(p, end, "url",  url,  sizeof(url));
         json_extract_string(p, end, "removable", removable_str, sizeof(removable_str));
 
-        /* Skip the default entry stored in file — we already added it */
-        if (strcmp(id, "default") == 0) { p = end + 1; continue; }
+        /* Built-in entries are always taken from the current program. */
+        if (strcmp(id, "default") == 0 || strcmp(id, "secondary") == 0) {
+            p = end + 1;
+            continue;
+        }
 
         if (name[0] && url[0] && id[0]) {
             strncpy(out[count].id,   id,   sizeof(out[count].id) - 1);
@@ -146,12 +158,7 @@ int sources_save(const char *json, size_t len) {
         return -1;
     }
 
-    /* Always put default at slot 0 */
-    strncpy(sources[0].id,   "default",             sizeof(sources[0].id) - 1);
-    strncpy(sources[0].name, "Official Repository", sizeof(sources[0].name) - 1);
-    strncpy(sources[0].url,  REPOSITORY_SOURCE_URL, sizeof(sources[0].url) - 1);
-    sources[0].removable = 0;
-    count = 1;
+    count = add_builtin_sources(sources);
 
     const char *arr_start = strstr(json, "\"sources\"");
     if (!arr_start) { free(sources); return -1; }
@@ -168,7 +175,10 @@ int sources_save(const char *json, size_t len) {
         json_extract_string(p, end, "name", name, sizeof(name));
         json_extract_string(p, end, "url",  url,  sizeof(url));
 
-        if (strcmp(id, "default") == 0) { p = end + 1; continue; }
+        if (strcmp(id, "default") == 0 || strcmp(id, "secondary") == 0) {
+            p = end + 1;
+            continue;
+        }
         if (!name[0] || !url[0] || !id[0]) { p = end + 1; continue; }
 
         strncpy(sources[count].id,   id,   sizeof(sources[count].id) - 1);
@@ -311,8 +321,8 @@ int sources_add(const char *url, char *msg_buf, size_t msg_size) {
 }
 
 int sources_remove(int index, char *msg_buf, size_t msg_size) {
-    if (index <= 0) {
-        snprintf(msg_buf, msg_size, "Cannot remove the default source");
+    if (index < 2) {
+        snprintf(msg_buf, msg_size, "Cannot remove a built-in source");
         return -1;
     }
 
@@ -353,8 +363,10 @@ static void get_source_cache_path(int index, char *out, size_t out_size) {
     if (index == 0) {
         strncpy(out, REPOSITORY_CACHE_PATH, out_size - 1);
         out[out_size - 1] = '\0';
+    } else if (index == 1) {
+        snprintf(out, out_size, "%s.secondary.json", REPOSITORY_CACHE_PATH);
     } else {
-        snprintf(out, out_size, "%s.src%d.json", REPOSITORY_CACHE_PATH, index);
+        snprintf(out, out_size, "%s.src%d.json", REPOSITORY_CACHE_PATH, index - 1);
     }
 }
 

@@ -44,7 +44,7 @@ const ManageSourcesView = ({ onBack, ip, addToast, showConfirm }) => {
   }
 
   const move = (idx, dir) => {
-    if (idx + dir < 1 || idx + dir >= sources.length) return
+    if (!sources[idx]?.removable || !sources[idx + dir]?.removable) return
     const updated = [...sources]
       ;[updated[idx], updated[idx + dir]] = [updated[idx + dir], updated[idx]]
     setSources(updated)
@@ -52,7 +52,7 @@ const ManageSourcesView = ({ onBack, ip, addToast, showConfirm }) => {
   }
 
   const remove = (idx) => {
-    if (idx === 0) return
+    if (!sources[idx]?.removable) return
     const src = sources[idx]
     showConfirm(
       t("manage_sources.remove_title", "Remove Source"),
@@ -184,7 +184,7 @@ const ManageSourcesView = ({ onBack, ip, addToast, showConfirm }) => {
                     <>
                       <button
                         onClick={() => move(idx, -1)}
-                        disabled={idx <= 1}
+                        disabled={!sources[idx - 1]?.removable}
                         className="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                         title={t("manage_sources.move_up_btn", "Move up")}
                       >
@@ -192,7 +192,7 @@ const ManageSourcesView = ({ onBack, ip, addToast, showConfirm }) => {
                       </button>
                       <button
                         onClick={() => move(idx, 1)}
-                        disabled={idx === sources.length - 1}
+                        disabled={!sources[idx + 1]?.removable}
                         className="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                         title={t("manage_sources.move_down_btn", "Move down")}
                       >
@@ -237,7 +237,7 @@ const ManageSourcesView = ({ onBack, ip, addToast, showConfirm }) => {
                   <>
                     <button
                       onClick={() => move(idx, -1)}
-                      disabled={idx <= 1}
+                      disabled={!sources[idx - 1]?.removable}
                       className="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                       title={t("manage_sources.move_up_btn", "Move up")}
                     >
@@ -245,7 +245,7 @@ const ManageSourcesView = ({ onBack, ip, addToast, showConfirm }) => {
                     </button>
                     <button
                       onClick={() => move(idx, 1)}
-                      disabled={idx === sources.length - 1}
+                      disabled={!sources[idx + 1]?.removable}
                       className="p-2 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                       title={t("manage_sources.move_down_btn", "Move down")}
                     >
