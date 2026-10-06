@@ -10,7 +10,7 @@ typedef struct PldmgrConfig {
     int  auto_browser_open;      /* Default: 1  (on) */
     int  autoload_delay;         /* Default: 5  (seconds) */
     int  kill_disc_player;       /* Default: 1  (on) */
-    int  scan_usb_payloads;      /* Default: 0  (off) */
+    int  scan_usb_payloads;      /* Default: 1  (on) */
     int  auto_install_app;       /* Default: 1  (on) */
     int  multi_sources_enabled;  /* Default: 0  (off) */
 } PldmgrConfig;

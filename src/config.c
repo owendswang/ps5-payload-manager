@@ -19,7 +19,7 @@ void config_read(PldmgrConfig *cfg) {
     cfg->auto_browser_open     = 1;
     cfg->autoload_delay        = 5;
     cfg->kill_disc_player      = 1;
-    cfg->scan_usb_payloads     = 0;
+    cfg->scan_usb_payloads     = 1;
     cfg->auto_install_app      = 1;
     cfg->multi_sources_enabled = 0;
 

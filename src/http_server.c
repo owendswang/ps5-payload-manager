@@ -82,7 +82,7 @@ static int is_allowed_payload_path(const char *path) {
     if (strncmp(path, "/mnt/usb", 8) == 0 &&
         path[8] >= '0' && path[8] <= '7' &&
         path[9] == '/') {
-        if (config_read_bool("SCAN_USB_PAYLOADS", 0)) {
+        if (config_read_bool("SCAN_USB_PAYLOADS", 1)) {
             return 1;
         }
     }

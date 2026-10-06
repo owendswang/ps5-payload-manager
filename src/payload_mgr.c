@@ -197,7 +197,7 @@ size_t payload_mgr_list_json(char *json_buf, size_t buf_size) {
     PayloadEntry *payloads = NULL;
     int count = 0;
     int max = 256;
-    int scan_usb = config_read_bool("SCAN_USB_PAYLOADS", 0);
+    int scan_usb = config_read_bool("SCAN_USB_PAYLOADS", 1);
 
     /* Scan pldmgr subdirs (this includes PAYLOADS_STORAGE_DIR under /data/pldmgr) */
     for (int i = 0; i < SCAN_DIRS_COUNT; i++) {
