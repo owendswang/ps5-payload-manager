@@ -741,7 +741,7 @@ int slot_validate_payload_path(const char *path, char *out_path, size_t out_size
         char root[512], library[528];
         snprintf(root, sizeof(root), PLDMGR_USB_ROOT_FORMAT, i);
         snprintf(library, sizeof(library), "%s/pldmgr", root);
-        allowed = canonical_usb_path(resolved, root, library, config_read_bool("SCAN_USB_PAYLOADS", 0));
+        allowed = canonical_usb_path(resolved, root, library, config_read_bool("SCAN_USB_PAYLOADS", 1));
     }
     if (!allowed || strlen(resolved) >= out_size) return -1;
     strcpy(out_path, resolved);

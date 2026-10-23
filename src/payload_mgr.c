@@ -108,7 +108,7 @@ size_t payload_mgr_list_json(char *json_buf, size_t buf_size) {
     /* Enumerate USB payloads */
     char **usb_paths = NULL;
     size_t usb_count = 0, usb_cap = 0;
-    int scan_usb = config_read_bool("SCAN_USB_PAYLOADS", 0);
+    int scan_usb = config_read_bool("SCAN_USB_PAYLOADS", 1);
 
     for (int u = 0; u < 8; u++) {
         char pldmgr_usb[64];

@@ -21,7 +21,7 @@ enum { SETTING_COUNT = sizeof(setting_keys) / sizeof(setting_keys[0]),
     AUTOLOAD_LIST_INDEX = SETTING_COUNT, FAVORITES_INDEX = SETTING_COUNT + 1 };
 
 static void defaults(PldmgrConfig *cfg) {
-    *cfg = (PldmgrConfig){.auto_browser_open=1, .autoload_delay=5, .auto_install_app=1, .kill_disc_player=1, .show_dashboard_icons=1};
+    *cfg = (PldmgrConfig){.auto_browser_open=1, .autoload_delay=5, .scan_usb_payloads=1, .auto_install_app=1, .kill_disc_player=1, .show_dashboard_icons=1};
 }
 static int read_config(PldmgrConfig *cfg) {
     defaults(cfg);
